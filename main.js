@@ -19,15 +19,16 @@ const errorMessage = document.querySelector('#error-message');
 // OPENWEATHERMAP API KEY
 // ==========================================
 
+// IMPORTANT:
+// Generate a NEW API key because the previous key
+// was exposed publicly.
 const OPENWEATHERMAP_API_KEY = 'b08af64dcf9354f4c07f28e924843e4c';
-
 
 
 // ==========================================
 // GLOBAL VARIABLES
 // ==========================================
 
-let locationTimezoneOffset = 0;
 let clockInterval;
 
 
@@ -38,7 +39,10 @@ let clockInterval;
 function showLoading() {
     loading.style.display = 'flex';
     weatherContainer.style.display = 'none';
-    errorMessage.style.display = 'none';
+
+    if (errorMessage) {
+        errorMessage.style.display = 'none';
+    }
 }
 
 
@@ -52,8 +56,10 @@ function showError(message) {
     loading.style.display = 'none';
     weatherContainer.style.display = 'none';
 
-    errorMessage.textContent = message;
-    errorMessage.style.display = 'block';
+    if (errorMessage) {
+        errorMessage.textContent = message;
+        errorMessage.style.display = 'block';
+    }
 }
 
 
@@ -63,117 +69,71 @@ function roundTemperature(temp) {
 
 
 // ==========================================
-// FORMAT LIVE LOCAL TIME
+// INDIA TIMEZONE
 // ==========================================
 
-function getLocationDate(timezoneOffset) {
-
-    const now = new Date();
-
-    /*
-        Convert browser time into UTC,
-        then apply OpenWeatherMap timezone offset.
-    */
-
-    const utcTime =
-        now.getTime() +
-        (now.getTimezoneOffset() * 60 * 1000);
-
-    return new Date(
-        utcTime +
-        (timezoneOffset * 1000)
-    );
-}
+// India Standard Time
+const INDIA_TIMEZONE = 'Asia/Kolkata';
 
 
 // ==========================================
-// LIVE CLOCK WITH AM / PM
+// GET INDIA CURRENT TIME
 // ==========================================
 
 function updateLiveClock() {
 
-    const locationDate =
-        getLocationDate(locationTimezoneOffset);
+    const now = new Date();
 
-    let hours = locationDate.getUTCHours();
 
-    const minutes =
-        locationDate.getUTCMinutes();
+    // ======================================
+    // TIME
+    // ======================================
 
-    const seconds =
-        locationDate.getUTCSeconds();
+    const timeFormatter =
+        new Intl.DateTimeFormat('en-IN', {
+            timeZone: INDIA_TIMEZONE,
+            hour: 'numeric',
+            minute: '2-digit',
+            second: '2-digit',
+            hour12: true
+        });
 
-    const amPM =
-        hours >= 12 ? 'PM' : 'AM';
-
-    hours =
-        hours % 12 || 12;
 
     currentTime.textContent =
-        `${hours}:${minutes
-            .toString()
-            .padStart(2, '0')}:${seconds
-            .toString()
-            .padStart(2, '0')} ${amPM}`;
+        timeFormatter.format(now);
 
 
-    // Date
+    // ======================================
+    // DATE
+    // ======================================
 
-    const days = [
-        'Sunday',
-        'Monday',
-        'Tuesday',
-        'Wednesday',
-        'Thursday',
-        'Friday',
-        'Saturday'
-    ];
+    const dateFormatter =
+        new Intl.DateTimeFormat('en-IN', {
+            timeZone: INDIA_TIMEZONE,
+            weekday: 'long',
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
 
-    const months = [
-        'January',
-        'February',
-        'March',
-        'April',
-        'May',
-        'June',
-        'July',
-        'August',
-        'September',
-        'October',
-        'November',
-        'December'
-    ];
-
-    const day =
-        days[locationDate.getUTCDay()];
-
-    const date =
-        locationDate.getUTCDate();
-
-    const month =
-        months[locationDate.getUTCMonth()];
-
-    const year =
-        locationDate.getUTCFullYear();
 
     currentDate.textContent =
-        `${day}, ${month} ${date}, ${year}`;
+        dateFormatter.format(now);
 }
 
 
 // ==========================================
-// START LIVE CLOCK
+// START LIVE INDIA CLOCK
 // ==========================================
 
-function startLiveClock(timezoneOffset) {
-
-    locationTimezoneOffset =
-        timezoneOffset || 0;
+function startLiveClock() {
 
     clearInterval(clockInterval);
 
+    // Show immediately
     updateLiveClock();
 
+    // Update every second
     clockInterval =
         setInterval(updateLiveClock, 1000);
 }
@@ -186,36 +146,64 @@ function startLiveClock(timezoneOffset) {
 function parseWeatherData(data) {
 
     if (data.cod !== 200) {
+
         throw new Error(
-            data.message || 'Unable to get weather data.'
+            data.message ||
+            'Unable to get weather data.'
         );
     }
+
+
+    // City
 
     cityName.textContent =
         data.name;
 
+
+    // Weather icon
+
     currentTempIcon.src =
         `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+
+
+    currentTempIcon.alt =
+        data.weather[0].description;
+
+
+    // Description
 
     currentTempDesc.textContent =
         data.weather[0].description;
 
+
+    // Current temperature
+
     currentTemp.textContent =
         `${roundTemperature(data.main.temp)}°C`;
 
+
+    // Maximum temperature
+
     maxTemp.textContent =
-        `${roundTemperature(data.main.temp_max)}°C`;
+        `H: ${roundTemperature(data.main.temp_max)}°C`;
+
+
+    // Minimum temperature
 
     minTemp.textContent =
-        `${roundTemperature(data.main.temp_min)}°C`;
+        `L: ${roundTemperature(data.main.temp_min)}°C`;
 
 
-    // Start clock using location timezone
+    // ======================================
+    // START INDIA REAL-TIME CLOCK
+    // ======================================
 
-    startLiveClock(data.timezone);
+    startLiveClock();
 
 
-    // Change background according to weather
+    // ======================================
+    // CHANGE BACKGROUND
+    // ======================================
 
     changeWeatherBackground(
         data.weather[0].main,
@@ -233,6 +221,7 @@ function getCurrentWeatherApi(city, lat, lon) {
     showLoading();
 
     let url;
+
 
     if (city) {
 
@@ -258,6 +247,7 @@ function getCurrentWeatherApi(city, lat, lon) {
         .then(response => {
 
             if (!response.ok) {
+
                 throw new Error(
                     'Unable to fetch current weather.'
                 );
@@ -279,7 +269,6 @@ function getCurrentWeatherApi(city, lat, lon) {
             showError(
                 'Unable to load weather information. Please check your API key or internet connection.'
             );
-
         });
 }
 
@@ -302,7 +291,9 @@ function parseForecastData(data) {
             'forecast-card';
 
 
-        // Forecast Time
+        // ==================================
+        // FORECAST TIME
+        // ==================================
 
         const forecastTime =
             document.createElement('div');
@@ -312,28 +303,24 @@ function parseForecastData(data) {
 
 
         const forecastDate =
-            new Date(
-                weatherInfo.dt * 1000
-            );
+            new Date(weatherInfo.dt * 1000);
 
 
-        let hours =
-            forecastDate.getUTCHours();
+        // Convert forecast UTC time to India time
 
-        const minutes =
-            forecastDate.getUTCMinutes();
-
-        const amPM =
-            hours >= 12 ? 'PM' : 'AM';
-
-        hours =
-            hours % 12 || 12;
+        const forecastTimeFormatter =
+            new Intl.DateTimeFormat('en-IN', {
+                timeZone: INDIA_TIMEZONE,
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+            });
 
 
         forecastTime.textContent =
-            `${hours}:${minutes
-                .toString()
-                .padStart(2, '0')} ${amPM}`;
+            forecastTimeFormatter.format(
+                forecastDate
+            );
 
 
         forecastCard.append(
@@ -341,7 +328,9 @@ function parseForecastData(data) {
         );
 
 
-        // Weather Icon
+        // ==================================
+        // WEATHER ICON
+        // ==================================
 
         const forecastIcon =
             document.createElement('img');
@@ -349,8 +338,10 @@ function parseForecastData(data) {
         forecastIcon.className =
             'forecast-icon';
 
+
         forecastIcon.src =
             `https://openweathermap.org/img/wn/${weatherInfo.weather[0].icon}@2x.png`;
+
 
         forecastIcon.alt =
             weatherInfo.weather[0].description;
@@ -361,13 +352,16 @@ function parseForecastData(data) {
         );
 
 
-        // Description
+        // ==================================
+        // DESCRIPTION
+        // ==================================
 
         const forecastDesc =
             document.createElement('div');
 
         forecastDesc.className =
             'forecast-desc';
+
 
         forecastDesc.textContent =
             weatherInfo.weather[0].description;
@@ -378,13 +372,16 @@ function parseForecastData(data) {
         );
 
 
-        // Temperature
+        // ==================================
+        // TEMPERATURE
+        // ==================================
 
         const forecastTemp =
             document.createElement('div');
 
         forecastTemp.className =
             'forecast-temp';
+
 
         forecastTemp.textContent =
             `${roundTemperature(weatherInfo.main.temp)}°C`;
@@ -411,6 +408,7 @@ function getForecastWeatherApi(city, lat, lon) {
 
     let url;
 
+
     if (city) {
 
         url =
@@ -437,6 +435,7 @@ function getForecastWeatherApi(city, lat, lon) {
         .then(response => {
 
             if (!response.ok) {
+
                 throw new Error(
                     'Unable to fetch forecast.'
                 );
@@ -460,7 +459,6 @@ function getForecastWeatherApi(city, lat, lon) {
             showError(
                 'Unable to load forecast information.'
             );
-
         });
 }
 
@@ -480,6 +478,8 @@ function changeWeatherBackground(
 
     body.className = '';
 
+
+    // Night weather
 
     if (icon.includes('n')) {
 
@@ -557,8 +557,19 @@ const params =
     new URL(document.location)
         .searchParams;
 
+
 const city =
     params.get('city');
+
+
+// ==========================================
+// START INDIA CLOCK IMMEDIATELY
+// ==========================================
+
+// This means the clock works even before
+// weather API responds.
+
+startLiveClock();
 
 
 // ==========================================
@@ -592,6 +603,7 @@ if (navigator.geolocation) {
             );
 
         },
+
 
         error => {
 
