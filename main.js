@@ -21,6 +21,10 @@ const errorMessage = document.querySelector('#error-message');
 
 const OPENWEATHERMAP_API_KEY = 'b08af64dcf9354f4c07f28e924843e4c';
 
+<<<<<<< HEAD
+=======
+const OPENWEATHERMAP_API_KEY = 'b08af64dcf9354f4c07f28e924843e4c';
+>>>>>>> ceb0f79ea11fc3c88dc7a7b0732f0ed74994e2bf
 
 // ==========================================
 // GLOBAL VARIABLES
