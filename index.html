@@ -1,14 +1,17 @@
-```html
+
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>Weather App</title>
 
-    <link rel="stylesheet"
-          href="https://fonts.googleapis.com/css?family=Quicksand">
+    <link
+        rel="stylesheet"
+        href="https://fonts.googleapis.com/css?family=Quicksand"
+    >
 
     <link rel="stylesheet" href="./style.css">
 </head>
@@ -16,44 +19,55 @@
 <body>
 
     <div id="loading">
-        <img src="loading.svg" alt="Loading weather data">
+        <img src="loading.svg" alt="Loading">
+        <p>Loading weather...</p>
     </div>
 
-    <main id="weather-container" style="display: none;">
+    <main id="weather-container">
 
         <div class="current-weather-container">
 
             <div class="city-name">Mumbai</div>
 
             <div class="current-temp-section">
+
                 <img
                     src="https://openweathermap.org/img/wn/10d@2x.png"
-                    alt="Weather icon"
+                    alt="Weather"
                     class="current-temp-icon"
                 >
 
-                <div class="current-temp">29&deg;C</div>
+                <div class="current-temp">
+                    29&deg;C
+                </div>
+
             </div>
 
             <div class="current-temp-desc">
-                clear sky
+                Clear sky
             </div>
 
             <div class="min-max-container">
-                <div class="max-temp">H: 32&deg;C</div>
-                <div class="min-temp">L: 29&deg;C</div>
+
+                <div class="max-temp">
+                    H: 32&deg;C
+                </div>
+
+                <div class="min-temp">
+                    L: 29&deg;C
+                </div>
+
             </div>
 
         </div>
 
-        <div class="forecast-container">
-            <!-- Forecast cards are generated dynamically using JavaScript -->
-        </div>
+        <div class="forecast-container"></div>
 
     </main>
 
     <script src="./main.js"></script>
 
 </body>
+
 </html>
 ```
