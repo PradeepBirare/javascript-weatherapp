@@ -21,7 +21,7 @@ const errorMessage = document.querySelector('#error-message');
 // ==========================================
 
 
-<<<<<<< HEAD
+const OPENWEATHERMAP_API_KEY = 'b08af64dcf9354f4c07f28e924843e4c';
 
 // ==========================================
 // GLOBAL VARIABLES
