@@ -1,3 +1,4 @@
+
 const cityName = document.querySelector('.city-name');
 const currentTempIcon = document.querySelector('.current-temp-icon');
 const currentTemp = document.querySelector('.current-temp');
@@ -19,8 +20,8 @@ const errorMessage = document.querySelector('#error-message');
 // OPENWEATHERMAP API KEY
 // ==========================================
 
-const OPENWEATHERMAP_API_KEY = 'b08af64dcf9354f4c07f28e924843e4c';
 
+<<<<<<< HEAD
 
 // ==========================================
 // GLOBAL VARIABLES
@@ -252,48 +253,185 @@ function getCurrentWeatherApi(city, lat, lon) {
     }
 
 
+=======
+// ==========================================
+// OpenWeatherMap API Key
+// ==========================================
+
+const OPENWEATHERMAP_API_KEY = 'YOUR_API_KEY';
+
+
+// ==========================================
+// Format Local Time
+// ==========================================
+
+function formatForecastTime(timestamp, timezoneOffset) {
+
+    // Convert Unix timestamp to milliseconds
+    const utcTime = timestamp * 1000;
+
+    // Add city's timezone offset
+    const localTime = new Date(
+        utcTime + (timezoneOffset * 1000)
+    );
+
+    let hours = localTime.getUTCHours();
+    const minutes = localTime.getUTCMinutes();
+
+    const amPm = hours >= 12 ? 'PM' : 'AM';
+
+    hours = hours % 12;
+
+    if (hours === 0) {
+        hours = 12;
+    }
+
+    const formattedMinutes =
+        minutes.toString().padStart(2, '0');
+
+    return `${hours}:${formattedMinutes} ${amPm}`;
+}
+
+
+// ==========================================
+// Current Weather
+// ==========================================
+
+function parseWeatherData(data) {
+
+    cityName.textContent = data.name;
+
+    currentTempIcon.src =
+        `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+
+    currentTempIcon.alt =
+        data.weather[0].description;
+
+    currentTemp.textContent =
+        `${Math.round(data.main.temp)}°C`;
+
+    currentTempDesc.textContent =
+        data.weather[0].description;
+
+    maxTemp.textContent =
+        `H: ${Math.round(data.main.temp_max)}°C`;
+
+    minTemp.textContent =
+        `L: ${Math.round(data.main.temp_min)}°C`;
+}
+
+
+// ==========================================
+// Current Weather API
+// ==========================================
+
+function getCurrentWeatherApi(city, lat, lon) {
+
+    loading.style.display = 'block';
+    weatherContainer.style.display = 'none';
+
+    let url;
+
+    if (city) {
+
+        url =
+            `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${OPENWEATHERMAP_API_KEY}&units=metric`;
+
+    } else {
+
+        url =
+            `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OPENWEATHERMAP_API_KEY}&units=metric`;
+    }
+
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
     fetch(url)
 
         .then(response => {
 
             if (!response.ok) {
+<<<<<<< HEAD
                 throw new Error(
                     'Unable to fetch current weather.'
                 );
             }
 
             return response.json();
+=======
+                throw new Error('Unable to fetch weather data.');
+            }
+
+            return response.json();
+
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
         })
 
         .then(data => {
 
+<<<<<<< HEAD
+=======
+            if (data.cod !== 200) {
+                throw new Error(data.message);
+            }
+
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
             parseWeatherData(data);
 
         })
 
         .catch(error => {
 
+<<<<<<< HEAD
             console.error(error);
 
             showError(
                 'Unable to load weather information. Please check your API key or internet connection.'
             );
 
+=======
+            console.error('Current Weather Error:', error);
+
+            alert(
+                'Unable to load weather information. Please try again.'
+            );
+
+        })
+
+        .finally(() => {
+
+            loading.style.display = 'none';
+            weatherContainer.style.display = 'block';
+
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
         });
 }
 
 
 // ==========================================
+<<<<<<< HEAD
 // FORECAST DATA
+=======
+// Forecast Data
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
 // ==========================================
 
 function parseForecastData(data) {
 
     forecastContainer.innerHTML = '';
 
+<<<<<<< HEAD
 
     data.list.forEach(weatherInfo => {
 
+=======
+    const timezoneOffset = data.city.timezone;
+
+    data.list.forEach(weatherInfo => {
+
+        // ------------------------------
+        // Forecast Card
+        // ------------------------------
+
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
         const forecastCard =
             document.createElement('div');
 
@@ -301,7 +439,13 @@ function parseForecastData(data) {
             'forecast-card';
 
 
+<<<<<<< HEAD
         // Forecast Time
+=======
+        // ------------------------------
+        // Forecast Time
+        // ------------------------------
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
 
         const forecastTime =
             document.createElement('div');
@@ -309,6 +453,7 @@ function parseForecastData(data) {
         forecastTime.className =
             'forecast-time';
 
+<<<<<<< HEAD
 
         const forecastDate =
             new Date(
@@ -336,11 +481,26 @@ function parseForecastData(data) {
 
 
         forecastCard.append(
+=======
+        forecastTime.textContent =
+            formatForecastTime(
+                weatherInfo.dt,
+                timezoneOffset
+            );
+
+        forecastCard.appendChild(
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
             forecastTime
         );
 
 
+<<<<<<< HEAD
         // Weather Icon
+=======
+        // ------------------------------
+        // Weather Icon
+        // ------------------------------
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
 
         const forecastIcon =
             document.createElement('img');
@@ -354,13 +514,23 @@ function parseForecastData(data) {
         forecastIcon.alt =
             weatherInfo.weather[0].description;
 
+<<<<<<< HEAD
 
         forecastCard.append(
+=======
+        forecastCard.appendChild(
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
             forecastIcon
         );
 
 
+<<<<<<< HEAD
         // Description
+=======
+        // ------------------------------
+        // Weather Description
+        // ------------------------------
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
 
         const forecastDesc =
             document.createElement('div');
@@ -371,13 +541,23 @@ function parseForecastData(data) {
         forecastDesc.textContent =
             weatherInfo.weather[0].description;
 
+<<<<<<< HEAD
 
         forecastCard.append(
+=======
+        forecastCard.appendChild(
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
             forecastDesc
         );
 
 
+<<<<<<< HEAD
         // Temperature
+=======
+        // ------------------------------
+        // Forecast Temperature
+        // ------------------------------
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
 
         const forecastTemp =
             document.createElement('div');
@@ -386,15 +566,29 @@ function parseForecastData(data) {
             'forecast-temp';
 
         forecastTemp.textContent =
+<<<<<<< HEAD
             `${roundTemperature(weatherInfo.main.temp)}°C`;
 
 
         forecastCard.append(
+=======
+            `${Math.round(weatherInfo.main.temp)}°C`;
+
+        forecastCard.appendChild(
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
             forecastTemp
         );
 
 
+<<<<<<< HEAD
         forecastContainer.append(
+=======
+        // ------------------------------
+        // Add Card
+        // ------------------------------
+
+        forecastContainer.appendChild(
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
             forecastCard
         );
 
@@ -403,7 +597,11 @@ function parseForecastData(data) {
 
 
 // ==========================================
+<<<<<<< HEAD
 // GET FORECAST
+=======
+// Forecast API
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
 // ==========================================
 
 function getForecastWeatherApi(city, lat, lon) {
@@ -413,15 +611,20 @@ function getForecastWeatherApi(city, lat, lon) {
     if (city) {
 
         url =
+<<<<<<< HEAD
             `https://api.openweathermap.org/data/2.5/forecast` +
             `?q=${encodeURIComponent(city)}` +
             `&appid=${OPENWEATHERMAP_API_KEY}` +
             `&units=metric` +
             `&cnt=4`;
+=======
+            `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&appid=${OPENWEATHERMAP_API_KEY}&units=metric&cnt=4`;
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
 
     } else {
 
         url =
+<<<<<<< HEAD
             `https://api.openweathermap.org/data/2.5/forecast` +
             `?lat=${lat}` +
             `&lon=${lon}` +
@@ -431,33 +634,60 @@ function getForecastWeatherApi(city, lat, lon) {
     }
 
 
+=======
+            `https://api.openweathermap.org/data/2.5/forecast?lat=${lat}&lon=${lon}&appid=${OPENWEATHERMAP_API_KEY}&units=metric&cnt=4`;
+    }
+
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
     fetch(url)
 
         .then(response => {
 
             if (!response.ok) {
+<<<<<<< HEAD
                 throw new Error(
                     'Unable to fetch forecast.'
                 );
             }
 
             return response.json();
+=======
+                throw new Error('Unable to fetch forecast data.');
+            }
+
+            return response.json();
+
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
         })
 
         .then(data => {
 
+<<<<<<< HEAD
             parseForecastData(data);
 
             hideLoading();
+=======
+            if (data.cod !== '200' && data.cod !== 200) {
+                throw new Error(data.message);
+            }
+
+            parseForecastData(data);
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
 
         })
 
         .catch(error => {
 
+<<<<<<< HEAD
             console.error(error);
 
             showError(
                 'Unable to load forecast information.'
+=======
+            console.error(
+                'Forecast Error:',
+                error
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
             );
 
         });
@@ -465,6 +695,7 @@ function getForecastWeatherApi(city, lat, lon) {
 
 
 // ==========================================
+<<<<<<< HEAD
 // DYNAMIC BACKGROUND
 // ==========================================
 
@@ -555,13 +786,24 @@ function changeWeatherBackground(
 const params =
     new URL(document.location)
         .searchParams;
+=======
+// Get City From URL
+// ==========================================
+
+const params =
+    new URL(window.location.href).searchParams;
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
 
 const city =
     params.get('city');
 
 
 // ==========================================
+<<<<<<< HEAD
 // GEOLOCATION
+=======
+// Detect User Location
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
 // ==========================================
 
 if (navigator.geolocation) {
@@ -576,6 +818,19 @@ if (navigator.geolocation) {
             const longitude =
                 position.coords.longitude;
 
+<<<<<<< HEAD
+=======
+            console.log(
+                'Latitude:',
+                latitude
+            );
+
+            console.log(
+                'Longitude:',
+                longitude
+            );
+
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
 
             getCurrentWeatherApi(
                 null,
@@ -583,7 +838,10 @@ if (navigator.geolocation) {
                 longitude
             );
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
             getForecastWeatherApi(
                 null,
                 latitude,
@@ -594,6 +852,7 @@ if (navigator.geolocation) {
 
         error => {
 
+<<<<<<< HEAD
             console.log(
                 'Location permission denied.'
             );
@@ -606,6 +865,22 @@ if (navigator.geolocation) {
 
             getForecastWeatherApi(
                 city || 'Mumbai'
+=======
+            console.warn(
+                'Location permission denied.',
+                error
+            );
+
+            const fallbackCity =
+                city || 'Mumbai';
+
+            getCurrentWeatherApi(
+                fallbackCity
+            );
+
+            getForecastWeatherApi(
+                fallbackCity
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
             );
 
         }
@@ -614,6 +889,7 @@ if (navigator.geolocation) {
 
 } else {
 
+<<<<<<< HEAD
     getCurrentWeatherApi(
         city || 'Mumbai'
     );
@@ -623,3 +899,18 @@ if (navigator.geolocation) {
         city || 'Mumbai'
     );
 }
+=======
+    const fallbackCity =
+        city || 'Mumbai';
+
+    getCurrentWeatherApi(
+        fallbackCity
+    );
+
+    getForecastWeatherApi(
+        fallbackCity
+    );
+
+}
+```
+>>>>>>> 153e17b6bc209a1f02cf26790dd518ed1bb15287
