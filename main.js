@@ -1,4 +1,4 @@
-```javascript
+
 const cityName = document.querySelector('.city-name');
 const currentTempIcon = document.querySelector('.current-temp-icon');
 const currentTemp = document.querySelector('.current-temp');
@@ -9,92 +9,30 @@ const forecastContainer = document.querySelector('.forecast-container');
 const loading = document.querySelector('#loading');
 const weatherContainer = document.querySelector('#weather-container');
 
-// Add your own API key here.
-// Do NOT publish your real API key in a public GitHub repository.
+
+// ==========================================
+// OpenWeatherMap API Key
+// ==========================================
+
 const OPENWEATHERMAP_API_KEY = 'YOUR_API_KEY';
 
 
-// ------------------------------------
-// Current Weather
-// ------------------------------------
+// ==========================================
+// Format Local Time
+// ==========================================
 
-function parseWeatherData(data) {
+function formatForecastTime(timestamp, timezoneOffset) {
 
-    cityName.textContent = data.name;
+    // Convert Unix timestamp to milliseconds
+    const utcTime = timestamp * 1000;
 
-    currentTempIcon.src =
-        `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+    // Add city's timezone offset
+    const localTime = new Date(
+        utcTime + (timezoneOffset * 1000)
+    );
 
-    currentTempDesc.textContent =
-        data.weather[0].description;
-
-    currentTemp.innerHTML =
-        `${data.main.temp}&deg;C`;
-
-    maxTemp.innerHTML =
-        `H: ${data.main.temp_max}&deg;C`;
-
-    minTemp.innerHTML =
-        `L: ${data.main.temp_min}&deg;C`;
-}
-
-
-function getCurrentWeatherApi(city, lat, lon) {
-
-    loading.style.display = 'block';
-    weatherContainer.style.display = 'none';
-
-    let url;
-
-    if (city) {
-
-        url =
-            `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${OPENWEATHERMAP_API_KEY}&units=metric`;
-
-    } else {
-
-        url =
-            `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OPENWEATHERMAP_API_KEY}&units=metric`;
-    }
-
-    fetch(url)
-
-        .then(res => res.json())
-
-        .then(data => {
-
-            if (data.cod !== 200) {
-                throw new Error(data.message);
-            }
-
-            parseWeatherData(data);
-        })
-
-        .catch(error => {
-
-            console.error('Weather API Error:', error);
-
-        })
-
-        .finally(() => {
-
-            loading.style.display = 'none';
-            weatherContainer.style.display = 'block';
-
-        });
-}
-
-
-// ------------------------------------
-// Format Forecast Time
-// ------------------------------------
-
-function formatForecastTime(dateString) {
-
-    const date = new Date(dateString);
-
-    let hours = date.getHours();
-    const minutes = date.getMinutes();
+    let hours = localTime.getUTCHours();
+    const minutes = localTime.getUTCMinutes();
 
     const amPm = hours >= 12 ? 'PM' : 'AM';
 
@@ -111,18 +49,112 @@ function formatForecastTime(dateString) {
 }
 
 
-// ------------------------------------
+// ==========================================
+// Current Weather
+// ==========================================
+
+function parseWeatherData(data) {
+
+    cityName.textContent = data.name;
+
+    currentTempIcon.src =
+        `https://openweathermap.org/img/wn/${data.weather[0].icon}@2x.png`;
+
+    currentTempIcon.alt =
+        data.weather[0].description;
+
+    currentTemp.textContent =
+        `${Math.round(data.main.temp)}°C`;
+
+    currentTempDesc.textContent =
+        data.weather[0].description;
+
+    maxTemp.textContent =
+        `H: ${Math.round(data.main.temp_max)}°C`;
+
+    minTemp.textContent =
+        `L: ${Math.round(data.main.temp_min)}°C`;
+}
+
+
+// ==========================================
+// Current Weather API
+// ==========================================
+
+function getCurrentWeatherApi(city, lat, lon) {
+
+    loading.style.display = 'block';
+    weatherContainer.style.display = 'none';
+
+    let url;
+
+    if (city) {
+
+        url =
+            `https://api.openweathermap.org/data/2.5/weather?q=${encodeURIComponent(city)}&appid=${OPENWEATHERMAP_API_KEY}&units=metric`;
+
+    } else {
+
+        url =
+            `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${OPENWEATHERMAP_API_KEY}&units=metric`;
+    }
+
+    fetch(url)
+
+        .then(response => {
+
+            if (!response.ok) {
+                throw new Error('Unable to fetch weather data.');
+            }
+
+            return response.json();
+
+        })
+
+        .then(data => {
+
+            if (data.cod !== 200) {
+                throw new Error(data.message);
+            }
+
+            parseWeatherData(data);
+
+        })
+
+        .catch(error => {
+
+            console.error('Current Weather Error:', error);
+
+            alert(
+                'Unable to load weather information. Please try again.'
+            );
+
+        })
+
+        .finally(() => {
+
+            loading.style.display = 'none';
+            weatherContainer.style.display = 'block';
+
+        });
+}
+
+
+// ==========================================
 // Forecast Data
-// ------------------------------------
+// ==========================================
 
 function parseForecastData(data) {
 
-    console.log(data);
-
-    // Clear existing forecast cards
     forecastContainer.innerHTML = '';
 
+    const timezoneOffset = data.city.timezone;
+
     data.list.forEach(weatherInfo => {
+
+        // ------------------------------
+        // Forecast Card
+        // ------------------------------
 
         const forecastCard =
             document.createElement('div');
@@ -131,7 +163,10 @@ function parseForecastData(data) {
             'forecast-card';
 
 
+        // ------------------------------
         // Forecast Time
+        // ------------------------------
+
         const forecastTime =
             document.createElement('div');
 
@@ -139,28 +174,41 @@ function parseForecastData(data) {
             'forecast-time';
 
         forecastTime.textContent =
-            formatForecastTime(weatherInfo.dt_txt);
+            formatForecastTime(
+                weatherInfo.dt,
+                timezoneOffset
+            );
 
-        forecastCard.append(forecastTime);
+        forecastCard.appendChild(
+            forecastTime
+        );
 
 
-        // Forecast Icon
+        // ------------------------------
+        // Weather Icon
+        // ------------------------------
+
         const forecastIcon =
             document.createElement('img');
 
         forecastIcon.className =
             'forecast-icon';
 
-        forecastIcon.alt =
-            weatherInfo.weather[0].description;
-
         forecastIcon.src =
             `https://openweathermap.org/img/wn/${weatherInfo.weather[0].icon}@2x.png`;
 
-        forecastCard.append(forecastIcon);
+        forecastIcon.alt =
+            weatherInfo.weather[0].description;
+
+        forecastCard.appendChild(
+            forecastIcon
+        );
 
 
-        // Forecast Description
+        // ------------------------------
+        // Weather Description
+        // ------------------------------
+
         const forecastDesc =
             document.createElement('div');
 
@@ -170,32 +218,44 @@ function parseForecastData(data) {
         forecastDesc.textContent =
             weatherInfo.weather[0].description;
 
-        forecastCard.append(forecastDesc);
+        forecastCard.appendChild(
+            forecastDesc
+        );
 
 
+        // ------------------------------
         // Forecast Temperature
+        // ------------------------------
+
         const forecastTemp =
             document.createElement('div');
 
         forecastTemp.className =
             'forecast-temp';
 
-        forecastTemp.innerHTML =
-            `${weatherInfo.main.temp}&deg;C`;
+        forecastTemp.textContent =
+            `${Math.round(weatherInfo.main.temp)}°C`;
 
-        forecastCard.append(forecastTemp);
+        forecastCard.appendChild(
+            forecastTemp
+        );
 
 
-        // Add card to forecast container
-        forecastContainer.append(forecastCard);
+        // ------------------------------
+        // Add Card
+        // ------------------------------
+
+        forecastContainer.appendChild(
+            forecastCard
+        );
 
     });
 }
 
 
-// ------------------------------------
+// ==========================================
 // Forecast API
-// ------------------------------------
+// ==========================================
 
 function getForecastWeatherApi(city, lat, lon) {
 
@@ -204,7 +264,7 @@ function getForecastWeatherApi(city, lat, lon) {
     if (city) {
 
         url =
-            `https://api.openweathermap.org/data/2.5/forecast?q=${city}&appid=${OPENWEATHERMAP_API_KEY}&units=metric&cnt=4`;
+            `https://api.openweathermap.org/data/2.5/forecast?q=${encodeURIComponent(city)}&appid=${OPENWEATHERMAP_API_KEY}&units=metric&cnt=4`;
 
     } else {
 
@@ -214,7 +274,15 @@ function getForecastWeatherApi(city, lat, lon) {
 
     fetch(url)
 
-        .then(res => res.json())
+        .then(response => {
+
+            if (!response.ok) {
+                throw new Error('Unable to fetch forecast data.');
+            }
+
+            return response.json();
+
+        })
 
         .then(data => {
 
@@ -228,62 +296,101 @@ function getForecastWeatherApi(city, lat, lon) {
 
         .catch(error => {
 
-            console.error('Forecast API Error:', error);
+            console.error(
+                'Forecast Error:',
+                error
+            );
 
         });
 }
 
 
-// ------------------------------------
+// ==========================================
 // Get City From URL
-// ------------------------------------
+// ==========================================
 
 const params =
-    new URL(document.location).searchParams;
+    new URL(window.location.href).searchParams;
 
 const city =
     params.get('city');
 
 
-// ------------------------------------
-// Browser Geolocation
-// ------------------------------------
+// ==========================================
+// Detect User Location
+// ==========================================
 
-navigator.geolocation.getCurrentPosition(
+if (navigator.geolocation) {
 
-    (position) => {
+    navigator.geolocation.getCurrentPosition(
 
-        console.log(position);
+        position => {
 
-        getCurrentWeatherApi(
-            null,
-            position.coords.latitude,
-            position.coords.longitude
-        );
+            const latitude =
+                position.coords.latitude;
 
-        getForecastWeatherApi(
-            null,
-            position.coords.latitude,
-            position.coords.longitude
-        );
+            const longitude =
+                position.coords.longitude;
 
-    },
+            console.log(
+                'Latitude:',
+                latitude
+            );
 
-    (error) => {
+            console.log(
+                'Longitude:',
+                longitude
+            );
 
-        console.error(
-            'Location Error:',
-            error
-        );
 
-        getCurrentWeatherApi(
-            city || 'mumbai'
-        );
+            getCurrentWeatherApi(
+                null,
+                latitude,
+                longitude
+            );
 
-        getForecastWeatherApi(
-            city || 'mumbai'
-        );
+            getForecastWeatherApi(
+                null,
+                latitude,
+                longitude
+            );
 
-    }
-);
+        },
+
+        error => {
+
+            console.warn(
+                'Location permission denied.',
+                error
+            );
+
+            const fallbackCity =
+                city || 'Mumbai';
+
+            getCurrentWeatherApi(
+                fallbackCity
+            );
+
+            getForecastWeatherApi(
+                fallbackCity
+            );
+
+        }
+
+    );
+
+} else {
+
+    const fallbackCity =
+        city || 'Mumbai';
+
+    getCurrentWeatherApi(
+        fallbackCity
+    );
+
+    getForecastWeatherApi(
+        fallbackCity
+    );
+
+}
 ```
